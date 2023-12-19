@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 class RoundButton extends StatefulWidget {
   const RoundButton({
-    Key? key,
+    super.key,
     required this.icon,
     required this.onPressed,
     required this.label,
     required this.loadingController,
     this.interval = const Interval(0, 1, curve: Curves.ease),
     this.size = 60,
-  }) : super(key: key);
+  });
 
   final Widget? icon;
   final VoidCallback onPressed;
@@ -70,7 +70,6 @@ class _RoundButtonState extends State<RoundButton>
         scale: _scaleLoadingAnimation,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             ScaleTransition(
               scale: _scaleAnimation,
@@ -97,8 +96,8 @@ class _RoundButtonState extends State<RoundButton>
             const SizedBox(height: 10),
             Text(
               widget.label!,
-              style:
-                  theme.textTheme.caption!.copyWith(color: theme.primaryColor),
+              style: theme.textTheme.bodySmall!
+                  .copyWith(color: theme.primaryColor),
               textAlign: TextAlign.center,
             ),
           ],

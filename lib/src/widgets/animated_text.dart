@@ -3,27 +3,27 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../math_helper.dart';
-import '../matrix.dart';
-import '../widget_helper.dart';
+import 'package:flutter_login/src/utils/math_helper.dart';
+import 'package:flutter_login/src/utils/matrix.dart';
+import 'package:flutter_login/src/utils/widget_helper.dart';
 
 enum AnimatedTextRotation { up, down }
 
 /// https://medium.com/flutter-community/flutter-challenge-3d-bottom-navigation-bar-48952a5fd996
 class AnimatedText extends StatefulWidget {
   const AnimatedText({
-    Key? key,
+    super.key,
     required this.text,
     this.style,
     this.textRotation = AnimatedTextRotation.up,
-  }) : super(key: key);
+  });
 
   final String text;
   final TextStyle? style;
   final AnimatedTextRotation textRotation;
 
   @override
-  _AnimatedTextState createState() => _AnimatedTextState();
+  State<AnimatedText> createState() => _AnimatedTextState();
 }
 
 class _AnimatedTextState extends State<AnimatedText>
@@ -47,14 +47,16 @@ class _AnimatedTextState extends State<AnimatedText>
       duration: const Duration(milliseconds: 500),
     );
 
-    _animation = Tween<double>(begin: 0.0, end: pi / 2).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutBack,
-    ));
+    _animation = Tween<double>(begin: 0.0, end: pi / 2).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOutBack,
+      ),
+    );
 
     _oldText = widget.text;
 
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() => _layoutHeight = getWidgetSize(_textKey)?.height);
     });
   }
@@ -88,7 +90,7 @@ class _AnimatedTextState extends State<AnimatedText>
     if (kIsWeb) {
       return Matrix4.identity();
     }
-    return Matrix.perspective(.006);
+    return perspective(.006);
   }
 
   Matrix4 _getFrontSideUp(double value) {
@@ -153,7 +155,7 @@ class _AnimatedTextState extends State<AnimatedText>
       builder: (context, child) => Stack(
         alignment: Alignment.center,
         children: <Widget>[
-          if (_animation.value <= MathHelper.toRadian(85))
+          if (_animation.value <= toRadian(85))
             Transform(
               alignment: Alignment.center,
               transform: rollUp
@@ -161,7 +163,7 @@ class _AnimatedTextState extends State<AnimatedText>
                   : _getFrontSideDown(_animation.value),
               child: oldText,
             ),
-          if (_animation.value >= MathHelper.toRadian(5))
+          if (_animation.value >= toRadian(5))
             Transform(
               alignment: Alignment.center,
               transform: rollUp

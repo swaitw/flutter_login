@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 
 class AnimatedNumericText extends StatelessWidget {
   AnimatedNumericText({
-    Key? key,
+    super.key,
     required this.initialValue,
     required this.targetValue,
     required this.controller,
@@ -14,11 +14,12 @@ class AnimatedNumericText extends StatelessWidget {
         numberAnimation = Tween<double>(
           begin: initialValue,
           end: targetValue,
-        ).animate(CurvedAnimation(
-          parent: controller,
-          curve: curve,
-        )),
-        super(key: key);
+        ).animate(
+          CurvedAnimation(
+            parent: controller,
+            curve: curve,
+          ),
+        );
 
   final double initialValue;
   final double targetValue;

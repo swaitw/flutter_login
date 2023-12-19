@@ -1,18 +1,22 @@
-part of auth_card_builder;
+part of 'auth_card_builder.dart';
 
 class _ConfirmSignupCard extends StatefulWidget {
   const _ConfirmSignupCard({
-    Key? key,
+    super.key,
     required this.onBack,
     required this.onSubmitCompleted,
     this.loginAfterSignUp = true,
     required this.loadingController,
-  }) : super(key: key);
+    required this.keyboardType,
+    required this.initialIsoCode,
+  });
 
   final bool loginAfterSignUp;
   final VoidCallback onBack;
   final VoidCallback onSubmitCompleted;
   final AnimationController loadingController;
+  final TextInputType? keyboardType;
+  final String? initialIsoCode;
 
   @override
   _ConfirmSignupCardState createState() => _ConfirmSignupCardState();
@@ -40,12 +44,12 @@ class _ConfirmSignupCardState extends State<_ConfirmSignupCard>
 
   @override
   void dispose() {
-    super.dispose();
     _fieldSubmitController.dispose();
+    super.dispose();
   }
 
   Future<bool> _submit() async {
-    FocusScope.of(context).requestFocus(FocusNode());
+    FocusScope.of(context).unfocus();
 
     if (!_formRecoverKey.currentState!.validate()) {
       return false;
@@ -57,27 +61,36 @@ class _ConfirmSignupCardState extends State<_ConfirmSignupCard>
     await _fieldSubmitController.forward();
     setState(() => _isSubmitting = true);
     final error = await auth.onConfirmSignup!(
-        _code,
-        LoginData(
-          name: auth.email,
-          password: auth.password,
-        ));
+      _code,
+      LoginData(
+        name: auth.email,
+        password: auth.password,
+      ),
+    );
 
     if (error != null) {
-      showErrorToast(context, messages.flushbarTitleError, error);
+      if (context.mounted) {
+        showErrorToast(context, messages.flushbarTitleError, error);
+      }
       setState(() => _isSubmitting = false);
       await _fieldSubmitController.reverse();
       return false;
     }
 
-    showSuccessToast(
-        context, messages.flushbarTitleSuccess, messages.confirmSignupSuccess);
+    if (context.mounted) {
+      showSuccessToast(
+        context,
+        messages.flushbarTitleSuccess,
+        messages.confirmSignupSuccess,
+      );
+    }
+
     setState(() => _isSubmitting = false);
     await _fieldSubmitController.reverse();
 
     if (!widget.loginAfterSignUp) {
       auth.mode = AuthMode.login;
-      widget.onBack();
+      widget.onSubmitCompleted();
       return false;
     }
 
@@ -86,27 +99,39 @@ class _ConfirmSignupCardState extends State<_ConfirmSignupCard>
   }
 
   Future<bool> _resendCode() async {
-    FocusScope.of(context).requestFocus(FocusNode());
+    FocusScope.of(context).unfocus();
 
     final auth = Provider.of<Auth>(context, listen: false);
     final messages = Provider.of<LoginMessages>(context, listen: false);
 
     await _fieldSubmitController.forward();
     setState(() => _isSubmitting = true);
-    final error = await auth.onResendCode!(SignupData.fromSignupForm(
+    final error = await auth.onResendCode!(
+      SignupData.fromSignupForm(
         name: auth.email,
         password: auth.password,
-        termsOfService: auth.getTermsOfServiceResults()));
+        termsOfService: auth.getTermsOfServiceResults(),
+      ),
+    );
 
     if (error != null) {
-      showErrorToast(context, messages.flushbarTitleError, error);
+      if (context.mounted) {
+        showErrorToast(context, messages.flushbarTitleError, error);
+      }
+
       setState(() => _isSubmitting = false);
       await _fieldSubmitController.reverse();
       return false;
     }
 
-    showSuccessToast(
-        context, messages.flushbarTitleSuccess, messages.resendCodeSuccess);
+    if (context.mounted) {
+      showSuccessToast(
+        context,
+        messages.flushbarTitleSuccess,
+        messages.resendCodeSuccess,
+      );
+    }
+
     setState(() => _isSubmitting = false);
     await _fieldSubmitController.reverse();
     return true;
@@ -127,6 +152,8 @@ class _ConfirmSignupCardState extends State<_ConfirmSignupCard>
         return null;
       },
       onSaved: (value) => _code = value!,
+      keyboardType: widget.keyboardType,
+      initialIsoCode: widget.initialIsoCode,
     );
   }
 
@@ -137,7 +164,7 @@ class _ConfirmSignupCardState extends State<_ConfirmSignupCard>
         onPressed: !_isSubmitting ? _resendCode : null,
         child: Text(
           messages.resendCodeButton,
-          style: theme.textTheme.bodyText2,
+          style: theme.textTheme.bodyMedium,
           textAlign: TextAlign.left,
         ),
       ),
@@ -197,7 +224,7 @@ class _ConfirmSignupCardState extends State<_ConfirmSignupCard>
                   child: Text(
                     messages.confirmSignupIntro,
                     textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyText2,
+                    style: theme.textTheme.bodyMedium,
                   ),
                 ),
                 const SizedBox(height: 20),

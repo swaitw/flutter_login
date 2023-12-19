@@ -1,16 +1,18 @@
-part of auth_card_builder;
+part of 'auth_card_builder.dart';
 
 class _ConfirmRecoverCard extends StatefulWidget {
   const _ConfirmRecoverCard({
-    Key? key,
+    super.key,
     required this.passwordValidator,
     required this.onBack,
     required this.onSubmitCompleted,
-  }) : super(key: key);
+    required this.initialIsoCode,
+  });
 
   final FormFieldValidator<String> passwordValidator;
   final VoidCallback onBack;
   final VoidCallback onSubmitCompleted;
+  final String? initialIsoCode;
 
   @override
   _ConfirmRecoverCardState createState() => _ConfirmRecoverCardState();
@@ -46,7 +48,7 @@ class _ConfirmRecoverCardState extends State<_ConfirmRecoverCard>
   }
 
   Future<bool> _submit() async {
-    FocusScope.of(context).requestFocus(FocusNode()); // close keyboard
+    FocusScope.of(context).unfocus(); // close keyboard
 
     if (!_formRecoverKey.currentState!.validate()) {
       return false;
@@ -66,13 +68,23 @@ class _ConfirmRecoverCardState extends State<_ConfirmRecoverCard>
     );
 
     if (error != null) {
-      showErrorToast(context, messages.flushbarTitleError, error);
+      if (context.mounted) {
+        showErrorToast(context, messages.flushbarTitleError, error);
+      }
       setState(() => _isSubmitting = false);
-      await _submitController.reverse();
+      if (context.mounted) {
+        await _submitController.reverse();
+      }
       return false;
     } else {
-      showSuccessToast(context, messages.flushbarTitleSuccess,
-          messages.confirmRecoverSuccess);
+      if (context.mounted) {
+        showSuccessToast(
+          context,
+          messages.flushbarTitleSuccess,
+          messages.confirmRecoverSuccess,
+        );
+      }
+
       setState(() => _isSubmitting = false);
       widget.onSubmitCompleted();
       return true;
@@ -95,6 +107,7 @@ class _ConfirmRecoverCardState extends State<_ConfirmRecoverCard>
         return null;
       },
       onSaved: (value) => _code = value!,
+      initialIsoCode: widget.initialIsoCode,
     );
   }
 
@@ -113,6 +126,7 @@ class _ConfirmRecoverCardState extends State<_ConfirmRecoverCard>
         final auth = Provider.of<Auth>(context, listen: false);
         auth.password = value!;
       },
+      initialIsoCode: widget.initialIsoCode,
     );
   }
 
@@ -129,6 +143,7 @@ class _ConfirmRecoverCardState extends State<_ConfirmRecoverCard>
         }
         return null;
       },
+      initialIsoCode: widget.initialIsoCode,
     );
   }
 
@@ -177,7 +192,7 @@ class _ConfirmRecoverCardState extends State<_ConfirmRecoverCard>
                 Text(
                   messages.confirmRecoverIntro,
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyText2,
+                  style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 20),
                 _buildVerificationCodeField(textFieldWidth, messages),

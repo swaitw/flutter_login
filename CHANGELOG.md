@@ -1,3 +1,57 @@
+## 5.0.0
+Breaking Changes:
+- [Android] Upgraded to Gradle 8. Due to a dependency update (intl_phone_number_input), the minimum Flutter version is changed to 3.16.
+
+Features:
+- Added keyboardDismissBehavior parameter to select the behaviour of the keyboard when scrolling.
+- Added initialIsoCode parameter to set the initial iso code for the widget [LoginUserType.intlPhone]. Defaults to ['US'] if not specified.
+- The card surfaceTintColor can now be set using cardTheme.surfaceTintColor.
+
+Bugs fixed:
+- Navigate to login page after pressing sign up confirm button when loginAfterSignUp is disabled and additionalSignupData is not null.
+- Added context checks to prevent crashes when widget is not mounted anymore.
+
+## 4.2.1
+- Added dynamic prefix-icon on recover card based on user type. (thanks @lucaloiacono !)
+
+## 4.2.0
+Features:
+- Added validateUserImmediately property. Should email be validated after losing focus [true] or after form submissions. 
+- Added confirmSignupRequired property. Additional option to decide in runtime if confirmation is required. 
+- Added UserFormField tooltip. 
+- Added LoginUserType Firstname, Lastname, Text, Intlphone and checkbox.
+
+Bugs fixed:
+- Fix autofill 
+- Fixed dispose() method must be called before super.dispose() 
+- Fixed providerNeedsSignUpCallback not being called. 
+- Provider Sign-up now also executes beforeAdditionalFieldsCallback() 
+- LoginUserType.phone now returns TextInputType.number
+- Scrollbar not attached to scroll controller
+
+## 4.1.1
+Bugs fixed:
+- Fixed an issue with keyboard unfocusing. (Thanks @otto-dev !)
+- Fixed an issue with checkboxFormField not updating value. (Thanks @Mojo1917 !)
+- Updated dependencies.
+
+## 4.1.0
+Features:
+* You can now select the keyboardType for the confirm Signup Code with [confirmSignupKeyboardType]. (Thanks @0ttik !)
+* Added a [headerWidget] that can be used to provide some text above the loginCard. (Thanks @cloudonlanapps !)
+* You can now perform checks between switching to additionalData (if provided) using [onSwitchToAdditionalFields] (Thanks @blanquartf !)
+
+Bugs fixed:
+* Fixed termOfService.linkUrl. (Thanks @fotiDim !)
+
+Other improvements:
+* Migrated to lint and applied all suggested lints.
+* Updated dependencies.
+
+## 4.0.0
+BREAKING CHANGES:
+Flutter 3 or higher is required. All other dependencies are updated to match this.
+
 ## 4.0.0-beta.1
 BREAKING CHANGES:
 * Upgraded font_awesome_flutter from v9 to v10

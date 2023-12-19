@@ -1,27 +1,30 @@
-part of auth_card_builder;
+part of 'auth_card_builder.dart';
 
 class _AdditionalSignUpCard extends StatefulWidget {
   _AdditionalSignUpCard({
-    Key? key,
+    super.key,
     required this.formFields,
     required this.onBack,
     this.loginTheme,
     required this.onSubmitCompleted,
     required this.loadingController,
-  }) : super(key: key) {
+    required this.initialIsoCode,
+  }) {
     if (formFields.isEmpty) {
       throw RangeError('The formFields array must not be empty');
     } else if (formFields.length > 6) {
       throw RangeError(
-          'More than 6 formFields are not displayable, you provided ${formFields.length}');
+        'More than 6 formFields are not displayable, you provided ${formFields.length}',
+      );
     }
   }
 
   final List<UserFormField> formFields;
-  final Function onBack;
-  final Function onSubmitCompleted;
+  final VoidCallback onBack;
+  final VoidCallback onSubmitCompleted;
   final LoginTheme? loginTheme;
   final AnimationController loadingController;
+  final String? initialIsoCode;
 
   @override
   _AdditionalSignUpCardState createState() => _AdditionalSignUpCardState();
@@ -32,7 +35,7 @@ class _AdditionalSignUpCardState extends State<_AdditionalSignUpCard>
   final GlobalKey<FormState> _formCompleteSignupKey = GlobalKey();
 
   // Used to remember all text controllers
-  late HashMap<String, TextEditingController> _nameControllers;
+  late Map<String, TextEditingController> _nameControllers;
 
   // List of animation controller for every field
   late List<AnimationController> _fieldAnimationControllers = [];
@@ -52,21 +55,26 @@ class _AdditionalSignUpCardState extends State<_AdditionalSignUpCard>
   void initState() {
     super.initState();
 
-    _nameControllers =
-        HashMap<String, TextEditingController>.fromIterable(widget.formFields,
-            key: (formFields) => formFields.keyName,
-            value: (formFields) => TextEditingController(
-                  text: formFields.defaultValue,
-                ));
+    _nameControllers = {
+      for (final formField in widget.formFields)
+        formField.keyName: TextEditingController(
+          text: formField.defaultValue,
+        ),
+    };
 
     if (_nameControllers.length != widget.formFields.length) {
       throw ArgumentError(
-          'Some of the formFields have duplicated names, and this is not allowed.');
+        'Some of the formFields have duplicated names, and this is not allowed.',
+      );
     }
 
     _fieldAnimationControllers = widget.formFields
-        .map((e) => AnimationController(
-            vsync: this, duration: const Duration(milliseconds: 1000)))
+        .map(
+          (e) => AnimationController(
+            vsync: this,
+            duration: const Duration(milliseconds: 1000),
+          ),
+        )
         .toList();
 
     // List<double> intervalBegin = List<double>.generate(widget.formFields.length, (i) => 0.15 / i);
@@ -80,18 +88,19 @@ class _AdditionalSignUpCardState extends State<_AdditionalSignUpCard>
       duration: const Duration(milliseconds: 1000),
     );
 
-    _buttonScaleAnimation =
-        Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-      parent: widget.loadingController,
-      curve: const Interval(.4, 1.0, curve: Curves.easeOutBack),
-    ));
+    _buttonScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: widget.loadingController,
+        curve: const Interval(.4, 1.0, curve: Curves.easeOutBack),
+      ),
+    );
   }
 
   @override
   void dispose() {
     // Don't dispose the controller when we get it from outside, otherwise we get an Error
     // since also the parent widget disposes it
-    for (var element in _fieldAnimationControllers) {
+    for (final element in _fieldAnimationControllers) {
       element.dispose();
     }
     _submitController.dispose();
@@ -99,10 +108,7 @@ class _AdditionalSignUpCardState extends State<_AdditionalSignUpCard>
   }
 
   Future<bool> _submit() async {
-    // a hack to force unfocus the soft keyboard. If not, after change-route
-    // animation completes, it will trigger rebuilding this widget and show all
-    // textfields and buttons again before going to new route
-    FocusScope.of(context).requestFocus(FocusNode());
+    FocusScope.of(context).unfocus();
 
     final messages = Provider.of<LoginMessages>(context, listen: false);
 
@@ -110,10 +116,13 @@ class _AdditionalSignUpCardState extends State<_AdditionalSignUpCard>
       return false;
     }
 
+    final auth = Provider.of<Auth>(context, listen: false);
+
     _formCompleteSignupKey.currentState!.save();
     await _submitController.forward();
+
     setState(() => _isSubmitting = true);
-    final auth = Provider.of<Auth>(context, listen: false);
+
     String? error;
 
     // We have to convert the Map<String, TextEditingController> to a Map<String, String>
@@ -123,65 +132,85 @@ class _AdditionalSignUpCardState extends State<_AdditionalSignUpCard>
 
     switch (auth.authType) {
       case AuthType.provider:
-        error = await auth.onSignup!(SignupData.fromProvider(
-          additionalSignupData: auth.additionalSignupData,
-        ));
-        break;
+        error = await auth.onSignup!(
+          SignupData.fromProvider(
+            additionalSignupData: auth.additionalSignupData,
+          ),
+        );
       case AuthType.userPassword:
-        error = await auth.onSignup!(SignupData.fromSignupForm(
+        error = await auth.onSignup!(
+          SignupData.fromSignupForm(
             name: auth.email,
             password: auth.password,
             additionalSignupData: auth.additionalSignupData,
-            termsOfService: auth.getTermsOfServiceResults()));
-        break;
+            termsOfService: auth.getTermsOfServiceResults(),
+          ),
+        );
     }
 
-    await _submitController.reverse();
-    if (!DartHelper.isNullOrEmpty(error)) {
-      showErrorToast(context, messages.flushbarTitleError, error!);
+    if (context.mounted) {
+      await _submitController.reverse();
+    }
+    if (!isNullOrEmpty(error)) {
+      if (context.mounted) {
+        showErrorToast(context, messages.flushbarTitleError, error!);
+      }
       setState(() => _isSubmitting = false);
       return false;
     } else {
-      showSuccessToast(context, messages.flushbarTitleSuccess,
-          messages.signUpSuccess, const Duration(seconds: 4));
+      if (context.mounted) {
+        showSuccessToast(
+          context,
+          messages.flushbarTitleSuccess,
+          messages.signUpSuccess,
+          const Duration(seconds: 4),
+        );
+      }
+
       setState(() => _isSubmitting = false);
       // await _loadingController.reverse();
-      widget.onSubmitCompleted.call();
+      widget.onSubmitCompleted();
       return true;
     }
   }
 
   Widget _buildFields(double width) {
     return Column(
-        children: widget.formFields.map((UserFormField formField) {
-      return Column(
-        children: [
-          const SizedBox(
-            height: 10,
-          ),
-          AnimatedTextFormField(
-            controller: _nameControllers[formField.keyName],
-            // interval: _fieldAnimationIntervals[widget.formFields.indexOf(formField)],
-            loadingController: widget.loadingController,
-            width: width,
-            labelText: formField.displayName,
-            prefixIcon:
-                formField.icon ?? const Icon(FontAwesomeIcons.solidCircleUser),
-            keyboardType: TextFieldUtils.getKeyboardType(formField.userType),
-            autofillHints: [
-              TextFieldUtils.getAutofillHints(formField.userType)
-            ],
-            textInputAction: formField.keyName == widget.formFields.last.keyName
-                ? TextInputAction.done
-                : TextInputAction.next,
-            validator: formField.fieldValidator,
-          ),
-          const SizedBox(
-            height: 5,
-          )
-        ],
-      );
-    }).toList());
+      children: widget.formFields.map((UserFormField formField) {
+        return Column(
+          children: [
+            const SizedBox(
+              height: 10,
+            ),
+            AnimatedTextFormField(
+              userType: formField.userType,
+              controller: _nameControllers[formField.keyName],
+              // interval: _fieldAnimationIntervals[widget.formFields.indexOf(formField)],
+              loadingController: widget.loadingController,
+              width: width,
+              labelText: formField.displayName,
+              prefixIcon: formField.icon ??
+                  const Icon(FontAwesomeIcons.solidCircleUser),
+              keyboardType: getKeyboardType(formField.userType),
+              autofillHints: [
+                getAutofillHints(formField.userType),
+              ],
+              textInputAction:
+                  formField.keyName == widget.formFields.last.keyName
+                      ? TextInputAction.done
+                      : TextInputAction.next,
+              validator: formField.fieldValidator,
+              tooltip: formField.tooltip,
+
+              initialIsoCode: widget.initialIsoCode,
+            ),
+            const SizedBox(
+              height: 5,
+            ),
+          ],
+        );
+      }).toList(),
+    );
   }
 
   Widget _buildSubmitButton(ThemeData theme, LoginMessages messages) {
@@ -196,7 +225,10 @@ class _AdditionalSignUpCardState extends State<_AdditionalSignUpCard>
   }
 
   Widget _buildBackButton(
-      ThemeData theme, LoginMessages messages, LoginTheme? loginTheme) {
+    ThemeData theme,
+    LoginMessages messages,
+    LoginTheme? loginTheme,
+  ) {
     final calculatedTextColor =
         (theme.cardTheme.color!.computeLuminance() < 0.5)
             ? Colors.white
@@ -248,7 +280,7 @@ class _AdditionalSignUpCardState extends State<_AdditionalSignUpCard>
                     messages.additionalSignUpFormDescription,
                     key: kRecoverPasswordIntroKey,
                     textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyText2,
+                    style: theme.textTheme.bodyMedium,
                   ),
                 ),
                 _buildFields(textFieldWidth),

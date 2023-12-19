@@ -1,21 +1,21 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_login/theme.dart';
 import 'package:flutter_login/widgets.dart';
-import 'transition_route_observer.dart';
-import 'widgets/fade_in.dart';
-import 'constants.dart';
-import 'widgets/animated_numeric_text.dart';
-import 'widgets/round_button.dart';
+import 'package:flutter_login_example/constants.dart';
+import 'package:flutter_login_example/transition_route_observer.dart';
+import 'package:flutter_login_example/widgets/animated_numeric_text.dart';
+import 'package:flutter_login_example/widgets/fade_in.dart';
+import 'package:flutter_login_example/widgets/round_button.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class DashboardScreen extends StatefulWidget {
   static const routeName = '/dashboard';
 
-  const DashboardScreen({Key? key}) : super(key: key);
+  const DashboardScreen({super.key});
 
   @override
-  _DashboardScreenState createState() => _DashboardScreenState();
+  State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends State<DashboardScreen>
@@ -41,18 +41,21 @@ class _DashboardScreenState extends State<DashboardScreen>
       duration: const Duration(milliseconds: 1250),
     );
 
-    _headerScaleAnimation =
-        Tween<double>(begin: .6, end: 1).animate(CurvedAnimation(
-      parent: _loadingController!,
-      curve: headerAniInterval,
-    ));
+    _headerScaleAnimation = Tween<double>(begin: .6, end: 1).animate(
+      CurvedAnimation(
+        parent: _loadingController!,
+        curve: headerAniInterval,
+      ),
+    );
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     routeObserver.subscribe(
-        this, ModalRoute.of(context) as PageRoute<dynamic>?);
+      this,
+      ModalRoute.of(context) as PageRoute<dynamic>?,
+    );
   }
 
   @override
@@ -107,7 +110,6 @@ class _DashboardScreenState extends State<DashboardScreen>
         controller: _loadingController,
         offset: .3,
         curve: headerAniInterval,
-        fadeDirection: FadeDirection.startToEnd,
         child: menuBtn,
       ),
       actions: <Widget>[
@@ -133,10 +135,12 @@ class _DashboardScreenState extends State<DashboardScreen>
         Colors.primaries.where((c) => c == theme.primaryColor).first;
     final accentColor =
         Colors.primaries.where((c) => c == theme.colorScheme.secondary).first;
-    final linearGradient = LinearGradient(colors: [
-      primaryColor.shade800,
-      primaryColor.shade200,
-    ]).createShader(const Rect.fromLTWH(0.0, 0.0, 418.0, 78.0));
+    final linearGradient = LinearGradient(
+      colors: [
+        primaryColor.shade800,
+        primaryColor.shade200,
+      ],
+    ).createShader(const Rect.fromLTWH(0.0, 0.0, 418.0, 78.0));
 
     return ScaleTransition(
       scale: _headerScaleAnimation,
@@ -153,7 +157,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               children: <Widget>[
                 Text(
                   '\$',
-                  style: theme.textTheme.headline3!.copyWith(
+                  style: theme.textTheme.displaySmall!.copyWith(
                     fontWeight: FontWeight.w300,
                     color: accentColor.shade400,
                   ),
@@ -164,21 +168,24 @@ class _DashboardScreenState extends State<DashboardScreen>
                   targetValue: 3467.87,
                   curve: const Interval(0, .5, curve: Curves.easeOut),
                   controller: _loadingController!,
-                  style: theme.textTheme.headline3!.copyWith(
+                  style: theme.textTheme.displaySmall!.copyWith(
                     foreground: Paint()..shader = linearGradient,
                   ),
                 ),
               ],
             ),
-            Text('Account Balance', style: theme.textTheme.caption),
+            Text('Account Balance', style: theme.textTheme.bodySmall),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildButton(
-      {Widget? icon, String? label, required Interval interval}) {
+  Widget _buildButton({
+    Widget? icon,
+    String? label,
+    required Interval interval,
+  }) {
     return RoundButton(
       icon: icon,
       label: label,
@@ -287,8 +294,8 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return WillPopScope(
-      onWillPop: () => _goToLogin(context),
+    return PopScope(
+      onPopInvoked: (hasPopped) => hasPopped ? _goToLogin(context) : null,
       child: SafeArea(
         child: Scaffold(
           appBar: _buildAppBar(theme),
@@ -313,7 +320,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                           return LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                            tileMode: TileMode.clamp,
                             colors: <Color>[
                               Colors.deepPurpleAccent.shade100,
                               Colors.deepPurple.shade100,

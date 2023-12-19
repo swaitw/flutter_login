@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter_login/flutter_login.dart';
+import 'package:flutter_login_example/constants.dart';
+import 'package:flutter_login_example/custom_route.dart';
+import 'package:flutter_login_example/dashboard_screen.dart';
+import 'package:flutter_login_example/users.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
-import 'constants.dart';
-import 'custom_route.dart';
-import 'dashboard_screen.dart';
-import 'users.dart';
 
 class LoginScreen extends StatelessWidget {
   static const routeName = '/auth';
 
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   Duration get loginTime => Duration(milliseconds: timeDilation.ceil() * 2250);
 
@@ -52,6 +51,7 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return FlutterLogin(
       title: Constants.appName,
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       logo: const AssetImage('assets/images/ecorp.png'),
       logoTag: Constants.logoTag,
       titleTag: Constants.titleTag,
@@ -90,18 +90,22 @@ class LoginScreen extends StatelessWidget {
       ],
       termsOfService: [
         TermOfService(
-            id: 'newsletter',
-            mandatory: false,
-            text: 'Newsletter subscription'),
+          id: 'newsletter',
+          mandatory: false,
+          text: 'Newsletter subscription',
+        ),
         TermOfService(
-            id: 'general-term',
-            mandatory: true,
-            text: 'Term of services',
-            linkUrl: 'https://github.com/NearHuscarl/flutter_login'),
+          id: 'general-term',
+          mandatory: true,
+          text: 'Term of services',
+          linkUrl: 'https://github.com/NearHuscarl/flutter_login',
+        ),
       ],
       additionalSignupFields: [
         const UserFormField(
-            keyName: 'Username', icon: Icon(FontAwesomeIcons.userLarge)),
+          keyName: 'Username',
+          icon: Icon(FontAwesomeIcons.userLarge),
+        ),
         const UserFormField(keyName: 'Name'),
         const UserFormField(keyName: 'Surname'),
         UserFormField(
@@ -109,8 +113,9 @@ class LoginScreen extends StatelessWidget {
           displayName: 'Phone Number',
           userType: LoginUserType.phone,
           fieldValidator: (value) {
-            var phoneRegExp = RegExp(
-                '^(\\+\\d{1,2}\\s)?\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}\$');
+            final phoneRegExp = RegExp(
+              '^(\\+\\d{1,2}\\s)?\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}\$',
+            );
             if (value != null &&
                 value.length < 7 &&
                 !phoneRegExp.hasMatch(value)) {
@@ -120,7 +125,6 @@ class LoginScreen extends StatelessWidget {
           },
         ),
       ],
-      initialAuthMode: AuthMode.login,
       // scrollable: true,
       // hideProvidersTitle: false,
       // loginAfterSignUp: false,
@@ -249,17 +253,20 @@ class LoginScreen extends StatelessWidget {
         });
         if (signupData.termsOfService.isNotEmpty) {
           debugPrint('Terms of service: ');
-          for (var element in signupData.termsOfService) {
+          for (final element in signupData.termsOfService) {
             debugPrint(
-                ' - ${element.term.id}: ${element.accepted == true ? 'accepted' : 'rejected'}');
+              ' - ${element.term.id}: ${element.accepted == true ? 'accepted' : 'rejected'}',
+            );
           }
         }
         return _signupUser(signupData);
       },
       onSubmitAnimationCompleted: () {
-        Navigator.of(context).pushReplacement(FadePageRoute(
-          builder: (context) => const DashboardScreen(),
-        ));
+        Navigator.of(context).pushReplacement(
+          FadePageRoute(
+            builder: (context) => const DashboardScreen(),
+          ),
+        );
       },
       onRecoverPassword: (name) {
         debugPrint('Recover password info');
@@ -267,7 +274,43 @@ class LoginScreen extends StatelessWidget {
         return _recoverPassword(name);
         // Show new password dialog
       },
-      showDebugButtons: true,
+      headerWidget: const IntroWidget(),
+    );
+  }
+}
+
+class IntroWidget extends StatelessWidget {
+  const IntroWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      children: [
+        Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: "You are trying to login/sign up on server hosted on ",
+              ),
+              TextSpan(
+                text: "example.com",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          textAlign: TextAlign.justify,
+        ),
+        Row(
+          children: <Widget>[
+            Expanded(child: Divider()),
+            Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text("Authenticate"),
+            ),
+            Expanded(child: Divider()),
+          ],
+        ),
+      ],
     );
   }
 }
